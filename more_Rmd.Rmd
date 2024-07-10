@@ -1,0 +1,149 @@
+---
+title: "Elements of Advanced R Markdown"
+author: "Sabrina Nardin"
+date: "2024-07-10"
+output: html_document
+---
+
+
+## Inline code
+
+Load libraries and data
+
+```{r}
+library(tidyverse)
+library(rcis)
+```
+
+Show Gun deaths by age
+
+```{r}
+youth <- gun_deaths %>% filter(age <= 65)
+```
+
+Data for this plot come from the `gun_deaths` dataset. We have data about `r nrow(gun_deaths)` individuals killed by guns. Only `r nrow(gun_deaths) - nrow(youth)` are older than 65.
+
+he distribution of the remainder is shown in the plot below: the peak of the distribution is around 22 years of age, with a second smaller peak around 50 years of age.
+
+
+## Naming code chuncks 
+
+A named code chunck:
+
+```{r youth-dist, cache = TRUE}
+
+# distribution of individuals younger than 65 killed by guns 
+youth %>%
+  ggplot(aes(age)) + 
+  geom_histogram(binwidth = 1) +
+  ggtitle("Individuals (0-65 years old) killed by guns") +
+  xlab("Age") +
+  ylab("Frequency")
+```
+Advantages of naming your code chuncks:
+
+1. More easily navigate to specific chunks (using the drop-down code navigator in the bottom-left of the script editor). Important: Two code chunks cannot have the same name!
+1. Graphics produced by the chunks will have useful names
+1. Can be used with `cache = TRUE`
+
+What is `cache = TRUE`? 
+It is an R Markdown option that saves the output of a code chunk to a file in memory. On subsequent runs, R checks if the code chunk has changed; if not, it reuses the saved output instead of re-running the code again (see Ch. 27 of "R for Data Science," 1st ed.). This is particularly useful for expensive computations, as it avoids re-running them every time you execute the code.
+
+
+## Code chunks options
+
+Most common code chunks options:
+
+**`eval = FALSE`** code is not evaluated; code appears in the report, results do not appear in the report. Useful to show an example code in your report, or when code has an error you want to show. Default is `eval = TRUE` 
+
+**`include = FALSE`** code is evaluated; code does not appear in the report, nor do results. Useful when you do not want to clutter your report with too much code. Default is `include = TRUE`
+
+**`echo = FALSE`** code is evaluated; code does not appear in the report, results appear in the report. Useful to show your output to people that are not interested in the code that produced it. Default is `echo = TRUE`
+
+**`error = TRUE`** code is evaluated and output appears in the report even if there is an error. Useful to knit with errors. Default is `error = FALSE`
+
+**`message = FALSE`** or **`warning = FALSE`** prevents messages or warnings from appearing in the report. Default is `message = TRUE` or `warning = TRUE`
+
+For more code chunks options see:
+* https://r4ds.had.co.nz/r-markdown.html#chunk-options
+* http://yihui.name/knitr/options/
+
+
+## Global options
+
+Use global options if you want to change the default chunck options for **all chunks** in your file. 
+
+In a code chunck (usually at the top of the document) type `knitr::opts_chunk$set()` with your options. For example, if we want to hide the code by default, you will type:
+
+```{r global-opts}
+knitr::opts_chunk$set(
+  echo = FALSE
+)
+```
+
+
+## YAML header specifications 
+
+Add a table of content
+```{r, eval = FALSE}
+---
+title: "Gun deaths"
+author: "Sabrina Nardin"
+output: 
+  html_document
+    toc: true
+---
+```
+
+
+Add date as a simple string
+```{r, eval = FALSE}
+title: "Gun deaths"
+output: html_document
+date: "2024-07-10"
+```
+
+
+Add the date automatically using `lubridate`
+```{r, eval = FALSE}
+---
+title: "Gun deaths"
+output: html_document
+date: "`r lubridate::today()`"
+---
+```
+
+
+Add the date automatically using `Sys.Date`, which returns the current day in the current time zone. The default uses the format year/month/day
+```{r, eval = FALSE}
+---
+title: "Gun deaths"
+output: html_document
+date: "`r Sys.Date()`"
+---
+````
+
+Add the date automatically using `Sys.time`, which returns an absolute date-time value which can be converted to various time zones, and it more easily is customizable. The format below says we want the date as: numeric day, full name of the month, and full (4-digit) year, but it can be changed. Source: https://www.statmethods.net/input/dates.html
+```{r, eval = FALSE}
+---
+title: "Gun deaths"
+output: html_document
+date: "`r format (Sys.time(), '%d, %B, %Y')`"
+---
+```
+
+
+## Practice
+
+1. Suppress messages when importing libraries. To observe the difference, import the libraries with and without suppressing the messages. Click on "Session > Restart R and Clear Output" to reload the libraries.
+
+2. Modify the YAML header so it generates an html_document with a table of contents, and adds the date automatically (vs. the current string)
+
+3. Name the currently unnamed code chunks in this file.
+
+4. Add the following Global code options to this document: 
+* set default figure with and height 
+* enable caching 
+
+5. Use the `youth-dist` code chunk to test different code chunk options (e.g., eval, include, echo etc.): pick an option, knit the document, and observe the differences in the rendered document 
+
