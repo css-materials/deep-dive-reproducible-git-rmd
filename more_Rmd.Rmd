@@ -1,38 +1,34 @@
 ---
 title: "Elements of Advanced R Markdown"
 author: "Sabrina Nardin"
-date: "2024-07-10"
+date: "2024-12-02"
 output: html_document
 ---
 
 
 ## Inline code
 
-Load libraries and data
-
+Load libraries and data, notice we are displaying all R messages here. We could also suppress them using one of the code chunks options summarized below.
 ```{r}
 library(tidyverse)
 library(rcis)
 ```
 
-Show Gun deaths by age
-
+Show Gun deaths by age:
 ```{r}
 youth <- gun_deaths %>% filter(age <= 65)
 ```
 
-Data for this plot come from the `gun_deaths` dataset. We have data about `r nrow(gun_deaths)` individuals killed by guns. Only `r nrow(gun_deaths) - nrow(youth)` are older than 65.
+Notice you can show your code output inline in your Rmd document like this: Data for this plot come from the `gun_deaths` dataset. We have data about `r nrow(gun_deaths)` individuals killed by guns. Only `r nrow(gun_deaths) - nrow(youth)` are older than 65.
 
-he distribution of the remainder is shown in the plot below: the peak of the distribution is around 22 years of age, with a second smaller peak around 50 years of age.
+The plot below (line 31) shows the distribution of individuals younger than 65. The peak of the distribution is around 22 years of age, with a second smaller peak around 50 years of age.
 
 
-## Naming code chuncks 
+## Code chunks names
 
-A named code chunck:
+A named code chunk:
 
 ```{r youth-dist, cache = TRUE}
-
-# distribution of individuals younger than 65 killed by guns 
 youth %>%
   ggplot(aes(age)) + 
   geom_histogram(binwidth = 1) +
@@ -40,14 +36,15 @@ youth %>%
   xlab("Age") +
   ylab("Frequency")
 ```
-Advantages of naming your code chuncks:
 
-1. More easily navigate to specific chunks (using the drop-down code navigator in the bottom-left of the script editor). Important: Two code chunks cannot have the same name!
-1. Graphics produced by the chunks will have useful names
+Advantages of naming your code chunks:
+
+1. More easily navigate to specific chunks (using the drop-down code navigator in the bottom-left of the script editor). NB: Two code chunks cannot have the same name or the document won't knit!
+1. Graphics produced by the chunks will have meaningful names
 1. Can be used with `cache = TRUE`
 
 What is `cache = TRUE`? 
-It is an R Markdown option that saves the output of a code chunk to a file in memory. On subsequent runs, R checks if the code chunk has changed; if not, it reuses the saved output instead of re-running the code again (see Ch. 27 of "R for Data Science," 1st ed.). This is particularly useful for expensive computations, as it avoids re-running them every time you execute the code.
+It is an R Markdown option that saves the output of a code chunk to a file in memory. On subsequent runs of the code, R checks if the code chunk has changed; if not, it reuses the saved output instead of re-running the code again (see Ch. 27 of "R for Data Science," 1st ed.). This is particularly useful for expensive computations or scraping projects, as it avoids re-running them every time you execute the code.
 
 
 ## Code chunks options
@@ -71,20 +68,26 @@ For more code chunks options see:
 
 ## Global options
 
-Use global options if you want to change the default chunck options for **all chunks** in your file. 
+Use global options if you want to change the default chunk options for **all code chunks** in your file. 
 
-In a code chunck (usually at the top of the document) type `knitr::opts_chunk$set()` with your options. For example, if we want to hide the code by default, you will type:
+This is how you set it up:
+
+* create a new code chunk at the top of the document
+* inside that code chunk, type `knitr::opts_chunk$set()` with your options. For example, if we want to hide all code by default, and add default width and height for all plots, w type:
 
 ```{r global-opts}
 knitr::opts_chunk$set(
-  echo = FALSE
-)
+  echo = FALSE,
+  fig.width = 7,
+  fig.height = 5)
 ```
 
 
 ## YAML header specifications 
 
-Add a table of content
+### Add a table of content
+
+Add a table of content (toc) with depth 2. Pay attention at the indentation, it has to be exactly as shown below: 
 ```{r, eval = FALSE}
 ---
 title: "Gun deaths"
@@ -92,17 +95,51 @@ author: "Sabrina Nardin"
 output: 
   html_document
     toc: true
+    toc_depth: 2
 ---
 ```
 
+
+### Knit in two (or more) formats at the same time
+
+You first need to specify the formats in your YAML headers, then run the `rmarkdown::render()` function from your Console to generate both formats simultaneously. 
+
+For example if you want to knit as html and pdf, with a table of content for each, type the following in your YAML header:
+```{r, eval = FALSE}
+---
+title: "Gun deaths"
+author: "Sabrina Nardin"
+output: 
+  html_document:
+    toc: true
+  pdf_document:
+    toc: true
+---
+```
+
+To knit them both at the same time in this document (which is titled `more_Rmd`), type the following in your Console: `rmarkdown::render("more_Rmd.Rmd", output_format = "all")`. Check the `intro_Rmd` tutorial for more on this. 
+
+To minimize repetitions, you can rewrite the code above as follows:
+```{r, eval = FALSE}
+---
+title: "Gun deaths"
+author: "Sabrina Nardin"
+output: 
+  html_document:
+  pdf_document:
+    toc: true
+---
+```
+
+
+### Add a date
 
 Add date as a simple string
 ```{r, eval = FALSE}
 title: "Gun deaths"
 output: html_document
-date: "2024-07-10"
+date: "2024-12-02"
 ```
-
 
 Add the date automatically using `lubridate`
 ```{r, eval = FALSE}
@@ -113,7 +150,6 @@ date: "`r lubridate::today()`"
 ---
 ```
 
-
 Add the date automatically using `Sys.Date`, which returns the current day in the current time zone. The default uses the format year/month/day
 ```{r, eval = FALSE}
 ---
@@ -121,9 +157,9 @@ title: "Gun deaths"
 output: html_document
 date: "`r Sys.Date()`"
 ---
-````
+```
 
-Add the date automatically using `Sys.time`, which returns an absolute date-time value which can be converted to various time zones, and it more easily is customizable. The format below says we want the date as: numeric day, full name of the month, and full (4-digit) year, but it can be changed. Source: https://www.statmethods.net/input/dates.html
+Add the date automatically using `Sys.time`, which returns an absolute date-time value which can be converted to various time zones. The format below says we want the date as: numeric day, full name of the month, and full (4-digit) year, but it can be changed. 
 ```{r, eval = FALSE}
 ---
 title: "Gun deaths"
@@ -132,18 +168,28 @@ date: "`r format (Sys.time(), '%d, %B, %Y')`"
 ---
 ```
 
+Quick reference on date formats in R: https://gist.github.com/zross/7fbbc034459aeff36627
+
+More on dates (our book): https://r4ds.had.co.nz/dates-and-times.html
+
+
 
 ## Practice
 
-1. Suppress messages when importing libraries. To observe the difference, import the libraries with and without suppressing the messages. Click on "Session > Restart R and Clear Output" to reload the libraries.
+In a team of two students, please complete the following:
 
-2. Modify the YAML header so it generates an html_document with a table of contents, and adds the date automatically (vs. the current string)
+1. Suppress messages when importing libraries. To observe the difference, knit with and without suppressing the messages. Click on 
+"Session > Restart R and Clear Output" to reload the libraries.
 
-3. Name the currently unnamed code chunks in this file.
+2. Give a name to the first two, currently unnamed, code chunks of this file.
 
-4. Add the following Global code options to this document: 
-* set default figure with and height 
-* enable caching 
+3. Use the code chunk named as `youth-dist` to test the following code chunk options: eval, include, echo. Start with the first one, set it as TRUE (e.g., `eval = TRUE`), knit the document, then set it as FALSE. Observe the differences in the rendered documents. Repeat for the other options.
 
-5. Use the `youth-dist` code chunk to test different code chunk options (e.g., eval, include, echo etc.): pick an option, knit the document, and observe the differences in the rendered document 
+4. Modify the YAML header of this document so it adds the date automatically (vs. the current simple string). Test a couple of methods illustrated in this tutorial and then pick one.
+
+5. Modify the YAML header of this document so it generates an `html_document` with a table of contents with a depth of 2. Try to change the depth to 1, then to 3. Do they both work? What you need to modify so both works correctly?
+
+6. Knit this document as html, md, and pdf at the same time. Add a table of contents to all of them.
+
+7. Add the following two Global code options to this document: set default figure width and height, and enable caching. 
 
