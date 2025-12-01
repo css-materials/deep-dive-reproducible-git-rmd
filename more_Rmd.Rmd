@@ -1,7 +1,6 @@
 ---
 title: "Elements of Advanced R Markdown"
 author: "Sabrina Nardin"
-date: "2024-12-02"
 output: html_document
 ---
 
